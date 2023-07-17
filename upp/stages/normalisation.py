@@ -62,7 +62,7 @@ class Normalisation:
         class_dict = {k: {} for k in self.variables}
         for name, array in batch.items():
             if name != self.variables.jets_name:
-                array = array[array["valid"]]
+                array = array[array["valid"].astype(bool)]
             for var in self.variables[name].get("labels", []):
                 if not np.issubdtype(array[var].dtype, np.integer) or var == "truthVertexIndex":
                     continue
@@ -107,7 +107,8 @@ class Normalisation:
         norm_dict = None
         class_dict = None
         total = None
-        stream = reader.stream(self.variables.combined(), self.num_jets)
+        # stream = reader.stream(self.variables.combined(), self.num_jets)
+        stream = reader.stream(self.variables.combined(), 50000)
 
         with ProgressBar() as progress:
             task = progress.add_task(
@@ -116,7 +117,7 @@ class Normalisation:
             )
 
             for i, batch in enumerate(stream):
-                this_norm_dict, num = self.get_norm_dict(batch)
+                # this_norm_dict, num = self.get_norm_dict(batch)
                 this_class_dict = self.get_class_dict(batch)
                 if i == 0:
                     norm_dict = this_norm_dict
