@@ -62,7 +62,7 @@ class Normalisation:
         class_dict = {k: {} for k in self.variables}
         for name, array in batch.items():
             if name != self.variables.jets_name:
-                array = array[array["valid"].astype(bool)]
+                array = array[array["valid"]]
             for var in self.variables[name].get("labels", []):
                 if not np.issubdtype(array[var].dtype, np.integer) or var == "truthVertexIndex":
                     continue
