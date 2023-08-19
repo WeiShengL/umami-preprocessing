@@ -2,6 +2,7 @@ import logging as log
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 from ftag import Cuts, Flavour, Flavours, Sample
 from ftag.hdf5 import H5Reader, H5Writer
 
@@ -23,16 +24,16 @@ class Component:
     def __post_init__(self):
         self.hist = Hist(self.dirname.parent.parent / "hists" / f"hist_{self.name}.h5")
 
-    def setup_reader(self, batch_size, fname=None):
+    def setup_reader(self, batch_size, fname=None, **kwargs):
         if fname is None:
             fname = self.sample.path
-        self.reader = H5Reader(fname, batch_size, equal_jets=self.equal_jets)
+        self.reader = H5Reader(fname, batch_size, equal_jets=self.equal_jets, **kwargs)
         log.debug(f"Setup component reader at: {fname}")
 
     def setup_writer(self, variables):
-        self.writer = H5Writer(
-            self.reader.files[0], self.out_path, variables.combined(), self.num_jets
-        )
+        dtypes = self.reader.dtypes(variables.combined())
+        shapes = self.reader.shapes(self.num_jets, variables.keys())
+        self.writer = H5Writer(self.out_path, dtypes, shapes)
         log.debug(f"Setup component writer at: {self.out_path}")
 
     @property
@@ -54,7 +55,9 @@ class Component:
         jn = self.reader.jets_name
         return self.reader.load({jn: variables}, num_jets, cuts)[jn]
 
-    def check_num_jets(self, num_jets, sampling_frac=None, cuts=None, silent=False):
+    def check_num_jets(
+        self, num_jets, sampling_frac=None, cuts=None, silent=False, raise_error=True
+    ):
         """Check if num_jets jets are aviailable after the cuts and sampling fraction."""
         total = self.reader.estimate_available_jets(cuts, self.num_jets_estimate)
         available = total
@@ -62,7 +65,7 @@ class Component:
             available = int(total * sampling_frac)
 
         # check with tolerance to avoid failure midway through preprocessing
-        if available < num_jets * 1.01:
+        if available < num_jets * 1.01 and raise_error:
             raise ValueError(
                 f"{num_jets:,} jets requested, but only {total:,} are estimated to be"
                 f" in {self}. With a sampling fraction of {sampling_frac}, at most"
@@ -71,11 +74,12 @@ class Component:
             )
 
         if not silent:
+            log.debug(f"Sampling fraction {sampling_frac}")
             log.info(f"Estimated {available:,} {self} jets available - {num_jets:,} requested")
 
     def get_auto_sampling_frac(self, num_jets, cuts=None, silent=False):
         total = self.reader.estimate_available_jets(cuts, self.num_jets_estimate)
-        auto_sampling_frac = 1.01 * num_jets / total  # 1.01 is a tolerance
+        auto_sampling_frac = 1.02 * num_jets / total  # 1.02 is a tolerance
         if not silent:
             log.debug(f"optimal sampling fraction {auto_sampling_frac:.3e}")
         return auto_sampling_frac
@@ -121,7 +125,28 @@ class Components:
                         equal_jets,
                     )
                 )
-        return cls(components)
+        components = cls(components)
+        if pp_cfg.sampl_cfg.method is not None:
+            components.check_flavour_ratios()
+        return components
+
+    def check_flavour_ratios(self):
+        ratios = {}
+        flavours = self.flavours
+        for region, components in self.groupby_region():
+            this_ratios = {}
+            for f in flavours:
+                this_ratios[f.name] = components[f].num_jets / components.num_jets
+            ratios[region] = this_ratios
+
+        ref = list(ratios.values())[0]
+        ref_region = list(ratios.keys())[0]
+        for i, (region, ratio) in enumerate(ratios.items()):
+            if i != 0 and not np.allclose(list(ratio.values()), list(ref.values())):
+                raise ValueError(
+                    f"Found inconsistent flavour ratios: \n - {ref_region}: {ref} \n - {region}:"
+                    f" {ratio}"
+                )
 
     @property
     def regions(self):
@@ -178,7 +203,10 @@ class Components:
         yield from self.components
 
     def __getitem__(self, index):
-        return self.components[index]
+        if isinstance(index, int):
+            return self.components[index]
+        if isinstance(index, str | Flavour):
+            return self.components[self.flavours.index(index)]
 
     def __len__(self):
         return len(self.components)
