@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging as log
 import random
 from pathlib import Path
@@ -9,6 +11,7 @@ from yamlinclude import YamlIncludeConstructor
 
 from upp.logger import ProgressBar
 from upp.stages.hist import bin_jets
+from upp.stages.interpolation import subdivide_bins, upscale_array_regionally
 
 random.seed(42)
 
@@ -36,7 +39,10 @@ class Resampling:
         self.variables = config.variables
         self.batch_size = config.batch_size
         self.is_test = config.is_test
+        self.jets_name = config.jets_name
         self.num_jets_estimate = config.num_jets_estimate
+        self.upscale_pdf = config.sampl_cfg.upscale_pdf or 1
+        self.regionlengthsd = self.get_regionlengthsd_from_config()
         self.methods_map = {
             "pdf": self.pdf_select_func,
             "countup": self.countup_select_func,
@@ -53,10 +59,13 @@ class Resampling:
         self.rng = np.random.default_rng(42)
 
     def countup_select_func(self, jets, component):
+        if self.upscale_pdf != 1:
+            raise ValueError("Upscaling of histogrms is not supported for countup method")
         num_jets = int(len(jets) * component.sampling_fraction)
-        target_pdf = self.target.hist.pdf
+        target_pdf = self.target.hist.pbin
         target_hist = target_pdf * num_jets
         target_hist = (np.floor(target_hist + self.rng.random(target_pdf.shape))).astype(int)
+
         _hist, binnumbers = bin_jets(jets[self.config.vars], self.config.flat_bins)
         assert target_pdf.shape == _hist.shape
 
@@ -75,14 +84,22 @@ class Resampling:
 
     def pdf_select_func(self, jets, component):
         # bin jets
-        _hist, binnumbers = bin_jets(jets[self.config.vars], self.config.flat_bins)
-        assert self.target.hist.pdf.shape == _hist.shape
+        if self.upscale_pdf > 1:
+            bins = [subdivide_bins(bins, self.upscale_pdf) for bins in self.config.flat_bins]
+        else:
+            bins = self.config.flat_bins
+
+        _hist, binnumbers = bin_jets(jets[self.config.vars], bins)
+        # assert target_shape == _hist.shape
         if binnumbers.ndim > 1:
             binnumbers = tuple(binnumbers[i] for i in range(len(binnumbers)))
 
         # importance sample with replacement
         num_samples = int(len(jets) * component.sampling_fraction)
-        probs = safe_divide(self.target.hist.pdf, component.hist.pdf)[binnumbers]
+        ratios = safe_divide(self.target.hist.pbin, component.hist.pbin)
+        if self.upscale_pdf > 1:
+            ratios = upscale_array_regionally(ratios, self.upscale_pdf, self.regionlengthsd)
+        probs = ratios[binnumbers]
         idx = random.choices(np.arange(len(jets)), weights=probs, k=num_samples)
         return idx
 
@@ -101,12 +118,16 @@ class Resampling:
 
                 # apply selections
                 comp_idx, _ = c.flavour.cuts(batch[self.variables.jets_name])
+                if len(comp_idx) == 0:
+                    continue
                 batch_out = select_batch(batch, comp_idx)
 
                 # apply sampling
                 idx = np.arange(len(batch_out[self.variables.jets_name]))
                 if c != self.target and not self.is_test and self.select_func:
                     idx = self.select_func(batch_out[self.variables.jets_name], c)
+                    if len(idx) == 0:
+                        continue
                     batch_out = select_batch(batch_out, idx)
 
                 # check for completion
@@ -155,7 +176,11 @@ class Resampling:
             # setup input stream
             variables = self.variables.add_jet_vars(cs.cuts.variables)
             reader = H5Reader(
-                sample.path, self.batch_size, equal_jets=equal_jets_flag, transform=self.transform
+                sample.path,
+                self.batch_size,
+                jets_name=self.jets_name,
+                equal_jets=equal_jets_flag,
+                transform=self.transform,
             )
             stream = reader.stream(variables.combined(), reader.num_jets, region.cuts)
 
@@ -219,11 +244,10 @@ class Resampling:
         # setup i/o
         for c in self.components:
             # just used for the writer configuration
-            c.setup_reader(self.batch_size, transform=self.transform)
-            c.setup_writer(self.variables)
+            c.setup_reader(self.batch_size, jets_name=self.jets_name, transform=self.transform)
+            c.setup_writer(self.variables, jets_name=self.jets_name)
 
         # set samplig fraction if needed
-
         self.set_component_sampling_fractions()
 
         # check samples
@@ -232,7 +256,8 @@ class Resampling:
             f" {self.config.sampling_fraction}..."
         )
         for c in self.components:
-            c.check_num_jets(c.num_jets, sampling_frac=c.sampling_fraction, cuts=c.cuts)
+            frac = c.sampling_fraction if not self.is_test else 1
+            c.check_num_jets(c.num_jets, sampling_frac=frac, cuts=c.cuts)
 
         # run resampling
         for region, components in self.components.groupby_region():
@@ -244,3 +269,16 @@ class Resampling:
         log.info(f"[bold green]Finished resampling a total of {self.components.num_jets:,} jets!")
         log.info(f"[bold green]Estimated unqiue jets: {unique:,.0f}")
         log.info(f"[bold green]Saved to {self.components.out_dir}/")
+
+    def get_regionlengthsd_from_config(self) -> list[list[int]]:
+        """Get the lengths of the binning regions in each variable from the config.
+
+        Returns
+        -------
+        typing.List[typing.List[int]]
+            lengths of the binning regions in each variable from the config
+        """
+        regionlengthsd = []
+        for row in self.config.bins.values():
+            regionlengthsd.append([sub[-1] for sub in row])
+        return regionlengthsd

@@ -15,9 +15,11 @@ logs/
 tmp/
 env/
 build/
+conda/
 bin/
 plots/
 run/
 
 **user**
+**temp**
 .vscode/launch.json
