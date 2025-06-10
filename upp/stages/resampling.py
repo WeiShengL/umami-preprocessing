@@ -223,6 +223,11 @@ class Resampling:
         for batch in stream:
             # Loop over the different components
             for component in components:
+                
+                if component.num_jets == 0:
+                    component._complete = True
+                    continue
+
                 # If a selected component is given, skip all components that are not selected
                 if selected_component and selected_component != component.name:
                     continue
@@ -316,7 +321,23 @@ class Resampling:
             If the equal_jets flag is not the same for all components.
         """
         # Get the target component
-        target = [component for component in components if component.is_target(self.config.target)]
+        target = [component for component in components if component.is_target(self.config.target) and component.num_jets > 0]
+
+        if len(target) == 0:
+            region_name = region.name
+            flavour_target = self.config.target
+            # Match pt-based region name to get a corresponding ghostcjets target
+            for r, comps in self.components.groupby_region():
+                if r.name != region_name:
+                    continue
+                for comp in comps:
+                    if comp.is_target(flavour_target) and comp.num_jets > 0:
+                        target = [comp]
+                        log.warning(
+                            f"Using {comp} from another sample as target for resampling in {region_name}"
+                        )
+                        break
+
         assert len(target) == 1, "Should have 1 target component per region"
         self.target = target[0]
 
@@ -385,7 +406,7 @@ class Resampling:
             # Log only the selected component or all if not selected component is given
             if (selected_component and component.name == selected_component) or (
                 not selected_component
-            ):
+            ) and component._ups_ratio is not None:
                 log.info(
                     f"{component} usampling ratio is {np.mean(component._ups_ratio):.3f}, with"
                     f" {component.num_jets/np.mean(component._ups_ratio):,.0f}/"
@@ -493,6 +514,10 @@ class Resampling:
                 self.batch_size, jets_name=self.jets_name, transform=self.transform
             )
 
+            # Skip components with 0 jets — avoid crashing on HDF5 creation
+            if iter_component.num_jets == 0:
+                log.info(f"Skipping {iter_component.name} — num_jets is 0.")
+                continue
             # If only one component is run, stop here for the target that needs to be
             # read but not written.
             if component and component != iter_component.name:
