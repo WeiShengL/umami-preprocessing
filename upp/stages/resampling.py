@@ -574,7 +574,8 @@ class Resampling:
                     # If a component is given, skip all components that are not selected
                     if component and iter_component.name != component:
                         continue
-                    unique += iter_component.writer.get_attr("unique_jets")
+                    if hasattr(iter_component, "writer") and iter_component.writer is not None:
+                        unique += iter_component.writer.get_attr("unique_jets")
             log.info(
                 f"[bold green]Finished resampling of region {region}. "
                 f"A total of {self.components.num_jets:,} jets!"
@@ -585,6 +586,7 @@ class Resampling:
         else:
             unique = sum(
                 iter_component.writer.get_attr("unique_jets") for iter_component in self.components
+                if hasattr(iter_component, "writer") and iter_component.writer is not None
             )
             log.info(
                 f"[bold green]Finished resampling a total of {self.components.num_jets:,} jets!"
