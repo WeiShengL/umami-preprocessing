@@ -11,6 +11,7 @@ from ftag.hdf5 import H5Writer, join_structured_arrays
 
 from upp.logger import ProgressBar
 from upp.utils import path_append
+from upp.classes.components import Component, Components
 
 if TYPE_CHECKING:  # pragma: no cover
     from upp.classes.components import Component, Components
@@ -243,6 +244,9 @@ class Merging:
         """
         # Prepare every Component's reader
         for component in components:
+            if component.num_jets == 0:
+                log.warning(f"Skipping {component.name} — file 0 jets written.")
+                continue
             batch_size = self.batch_size * component.num_jets // components.num_jets + 1
             component.setup_reader(
                 batch_size,
@@ -274,16 +278,18 @@ class Merging:
         )
 
         # Open the first output file
-        self._open_writer(sample, first_file_size, self._file_idx, components)
+        valid_components = [c for c in components if c.num_jets > 0]
+        valid_components = Components(valid_components)
+        self._open_writer(sample, first_file_size, self._file_idx, valid_components)
 
         # Main merge loop (progress bar unchanged)
         with ProgressBar() as progress:
             task = progress.add_task(
-                f"[green]Merging {components.num_jets:,} jets...",
-                total=components.num_jets,
+                f"[green]Merging {valid_components.num_jets:,} jets...",
+                total=valid_components.num_jets,
             )
             while True:
-                n = self.write_chunk(components)
+                n = self.write_chunk(valid_components)
                 if not n:
                     break
                 progress.update(task, advance=n)
@@ -291,7 +297,7 @@ class Merging:
         # Close Writer
         self.writer.close()
         label = "merged" if sample is None else sample
-        log.info(f"[bold green]Finished merging {components.num_jets:,} {label} jets!")
+        log.info(f"[bold green]Finished merging {valid_components.num_jets:,} {label} jets!")
 
     def run(self):
         """Run merging of the components."""
