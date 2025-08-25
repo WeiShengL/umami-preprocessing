@@ -9,14 +9,8 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 from ftag.hdf5 import H5Writer, join_structured_arrays
 
-<<<<<<< HEAD
-from upp.logger import ProgressBar
-from upp.utils import path_append
-from upp.classes.components import Component, Components
-=======
 from upp.utils.logger import ProgressBar
 from upp.utils.tools import path_append
->>>>>>> main
 
 if TYPE_CHECKING:  # pragma: no cover
     from upp.classes.components import Component, Components
