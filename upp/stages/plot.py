@@ -8,7 +8,7 @@ from ftag import Cuts
 from ftag.hdf5 import H5Reader
 from puma import Histogram, HistogramPlot
 
-from upp.utils import path_append
+from upp.utils.tools import path_append
 
 if TYPE_CHECKING:  # pragma: no cover
     from upp.classes.preprocessing_config import PreprocessingConfig
@@ -36,6 +36,8 @@ def make_hist(
     stage : str
         The stage in which the preprocessing is currently in.
         Mainly used for the ouput name string.
+    values_dict : dict
+        Dict with the loaded values.
     flavours : list
         List of the flavours that are to be plotted. The list
         needs to contain the Flavour class instances from the
@@ -47,12 +49,14 @@ def make_hist(
     jets_name: str, optional
         Name of the jet dataset / the global objects
         by default "jets"
-    bins_range : tuple, optional
+    bins_range : tuple | None, optional
         bins_range argument from from puma.HistogramPlot,
         by default None
     suffix : str, optional
         A string suffix which is added to the plot
         output name, by default "".
+    out_format : str, optional
+        Output format of the plot. By default "png"
     """
     # Get the correct name of the xlabel
     if "pt" in variable:
@@ -68,12 +72,8 @@ def make_hist(
     plot = HistogramPlot(
         ylabel=f"Normalised Number of {jets_name}",
         xlabel=xlabel,
-        bins=50,
         y_scale=1.5,
         logy=True,
-        norm=True,
-        bins_range=bins_range,
-        underoverflow=False,
     )
 
     # Define different linestyles for the different samples
@@ -89,19 +89,28 @@ def make_hist(
             else:
                 cuts = Cuts.from_list([f"flavour_label == {label_value}"])
 
-            # Add to histogram
-            plot.add(
-                Histogram(
-                    values=(
-                        cuts(values).values[variable] / 1e3
-                        if "pt" in variable
-                        else cuts(values).values[variable]
-                    ),
-                    label=flavour.label + " " + values_key,
-                    colour=flavour.colour,
-                    linestyle=linestiles[counter],
-                )
+            # Get the histogram object
+            histo = Histogram(
+                values=(
+                    cuts(values).values[variable] / 1e3
+                    if "pt" in variable
+                    else cuts(values).values[variable]
+                ),
+                bins=50,
+                bins_range=bins_range,
+                norm=True,
+                label=flavour.label + " " + values_key,
+                colour=flavour.colour,
+                linestyle=linestiles[counter],
+                underoverflow=True,
             )
+
+            # Add to histogram
+            plot.add(histogram=histo)
+
+            # Set bin_edges
+            if bins_range is None:
+                bins_range = (histo.bin_edges[0], histo.bin_edges[-1])
 
     # Draw plot
     plot.draw()
@@ -126,6 +135,8 @@ def plot_resampling_dists(config: PreprocessingConfig, stage: str) -> None:
     ----------
     config : PreprocessingConfig
         PreprocessingConfig object of the current preprocessing.
+    stage : str
+        Stage that is to be run.
     """
     log.info("Plotting initial plots for the resampling variables...")
     # Get all the variables that need to be loaded

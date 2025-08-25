@@ -25,7 +25,7 @@ class Component:
     It stores the needed information about the component and
     allow for certain features in terms of resampling.
 
-    Parameters
+    Attributes
     ----------
     region : Region
         Region instance of the region for which this instance is setup
@@ -78,8 +78,10 @@ class Component:
             Batch size that is used for loading from file
         jets_name : str, optional
             Name of the group in which the jets are stored, by default "jets"
-        fname : Path | str | list[Path  |  str], optional
+        fname : Path | str | list[Path | str] | None, optional
             Filename of the file(s) from which the jets are loaded, by default None
+        **kwargs
+            Additional kwargs passed to the H5Reader
         """
         if fname is None:
             fname = self.sample.path
@@ -292,13 +294,6 @@ class Components:
     """Components class to store and manage multiple Component instances."""
 
     def __init__(self, components: Components | list):
-        """Init Components instance.
-
-        Parameters
-        ----------
-        components : Components
-            List of all Component instances that are to be managed.
-        """
         self.components = components
 
     @classmethod
@@ -341,6 +336,7 @@ class Components:
                 pattern=pattern,
                 ntuple_dir=config.ntuple_dir,
                 name=component["sample"]["name"],
+                skip_checks=config.skip_checks,
             )
 
             # Create the Component instances for the different flavours
@@ -365,7 +361,7 @@ class Components:
         components = cls(component_list)
 
         # Check the flavour ratios
-        if config.sampl_cfg.method is not None:
+        if config.sampl_cfg and config.sampl_cfg.method is not None:
             components.check_flavour_ratios()
 
         return components
@@ -423,7 +419,7 @@ class Components:
 
         Returns
         -------
-        list[str]
+        list[Label]
             List of flavours
         """
         return list(dict.fromkeys(c.flavour for c in self))
@@ -434,8 +430,8 @@ class Components:
 
         Returns
         -------
-        list
-            List with all the cuts
+        Cuts
+            Cuts object with all cuts
         """
         return sum((c.cuts for c in self), Cuts.from_list([]))
 
