@@ -160,6 +160,13 @@ def create_histograms(
         if isinstance(component_to_run, str) and component_to_run != component.name:
             continue
 
+        out_path: Path = component.hist.path  # assumes this is a pathlib.Path
+        if out_path.exists():
+            log.info(
+                f"Skipping {component} because output already exists: {out_path.name}"
+            )
+            continue
+
         log.info(f"Estimating {component} PDF using {config.num_jets_estimate_hist:,} samples...")
         component.setup_reader(batch_size=config.batch_size, jets_name=config.jets_name)
         cuts_no_split = component.cuts.ignore(["eventNumber"])
