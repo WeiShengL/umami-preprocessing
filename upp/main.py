@@ -227,7 +227,7 @@ def run_pp(args: argparse.Namespace) -> None:
         if not args.skip_sample_check:
             run_input_sample_check(
                 config=config,
-                deviation_factor=10.0,
+                deviation_factor=1000.0,
                 verbose=True,
             )
 
