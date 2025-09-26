@@ -13,9 +13,8 @@ from upp.utils.logger import ProgressBar
 from upp.utils.tools import path_append
 
 if TYPE_CHECKING:  # pragma: no cover
-    from upp.classes.components import Component, Components
+    from upp.classes.components import Component
     from upp.classes.preprocessing_config import PreprocessingConfig
-
 
 class Merging:
     """Merging Class to merge different components/regions."""
@@ -293,7 +292,8 @@ class Merging:
 
         # Open the first output file
         valid_components = [c for c in components if c.num_jets > 0]
-        valid_components = Components(valid_components)
+        from upp.classes.components import Components as _Components
+        valid_components = _Components(valid_components)
         self._open_writer(sample, first_file_size, self._file_idx, valid_components)
 
         # Main merge loop (progress bar unchanged)
