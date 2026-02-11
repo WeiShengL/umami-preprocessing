@@ -1,0 +1,291 @@
+variables: !include /global/homes/w/wlai/phd/dataset/atlas/config/upp_config/variables-ghost-GN3V01-maybe.yaml
+global_cuts: !include /global/homes/w/wlai/phd/dataset/atlas/config/upp_config/simple-split.yaml
+
+ttbar: &ttbar
+  name: ttbar
+  equal_jets: False
+  pattern:
+    - "user.wlai.601589.e8547_s3797_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d
+    - "user.wlai.601589.e8549_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a
+    - "user.wlai.601589.e8549_s4159_r15530_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d
+    # - "user.wlai.601589.e8549_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e
+
+zprime: &zprime
+  name: zprime
+  equal_jets: False
+  pattern:
+    - "user.wlai.800030.e7954_s3797_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d
+    - "user.wlai.800030.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a
+    - "user.wlai.800030.e8514_s4159_r15530_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d
+    # - "user.wlai.800030.e8514_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e
+
+gamma: &gamma
+  name: gamma
+  equal_jets: False
+  pattern:
+    - "user.wlai.801002.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a
+    - "user.wlai.801002.e8514_s4159_r15530_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d
+    # - "user.wlai.801002.e8514_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e
+
+QCD: &QCD
+  name: QCD
+  equal_jets: False
+  pattern:
+    - "user.wlai.600624.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz1
+    - "user.wlai.600625.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz2
+    - "user.wlai.600626.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz3
+    - "user.wlai.600627.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz4
+    - "user.wlai.600628.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz5
+    - "user.wlai.600629.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz6
+    - "user.wlai.600630.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz7
+    - "user.wlai.600631.e8351_s3681_r13144_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC20d jz8
+    - "user.wlai.601700.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz1
+    - "user.wlai.601701.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz2
+    - "user.wlai.601702.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz3
+    - "user.wlai.601703.e8514_s4162_r15540_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz4
+    - "user.wlai.601704.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz5
+    - "user.wlai.601705.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz6
+    - "user.wlai.601706.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23a jz7
+    # - "user.wlai.601707.e8514_s4162_r14622_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/user.wlai.45954681._000001.output.h5" # MC23a jz8
+    - "user.wlai.601700.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz1
+    - "user.wlai.601701.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz2
+    - "user.wlai.601702.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz3
+    - "user.wlai.601703.e8551_s4159_r15530_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz4
+    - "user.wlai.601704.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz5
+    - "user.wlai.601705.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz6
+    - "user.wlai.601706.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23d jz7
+    # - "user.wlai.601707.e8551_s4159_r15224_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/user.wlai.45954689._000001.output.h5" # MC23d jz8
+    - "jz8_directory/*.h5" # MC23a MC23d jz8
+    # - "user.wlai.601700.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz1
+    # - "user.wlai.601701.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz2
+    # - "user.wlai.601702.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz3
+    # - "user.wlai.601703.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz4
+    # - "user.wlai.601704.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz5
+    # - "user.wlai.601705.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz6
+    # - "user.wlai.601706.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz7
+    # - "user.wlai.601707.e8551_s4369_r16083_p6859.tdd.GN3_dev.25_2_59.25-08-10_GN3V01MaybeQCD_output.h5/*.h5" # MC23e jz8
+
+
+lowpt: &lowpt
+  name: lowpt
+  cuts:
+    - [pt_btagJes, ">", 10_000]
+    - [pt_btagJes, "<", 250_000]
+highpt: &highpt
+  name: highpt
+  cuts:
+    - [pt_btagJes, ">", 250_000]
+    - [pt_btagJes, "<", 6_000_000]
+
+components:
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghostbjets]
+    num_jets: 130_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghostcjets]
+    num_jets: 32_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghostsjets]
+    num_jets: 26_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghostudjets]
+    num_jets: 80_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghostgjets]
+    num_jets: 78_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *ttbar
+    flavours: [ghosttaujets]
+    num_jets: 14_000_000
+    # num_jets: 36_000_000
+    num_jets_test: 500_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *gamma
+    flavours: [ghostbjets, ghostcjets, ghostsjets, ghostudjets, ghostgjets]
+    num_jets: 0
+    num_jets_test: 0
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *gamma
+    flavours: [ghosttaujets]
+    num_jets: 20_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *QCD
+    flavours: [ghostbjets, ghostcjets, ghosttaujets]
+    num_jets: 0
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *QCD
+    flavours: [ghostsjets]
+    num_jets: 68_250_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *QCD
+    flavours: [ghostudjets]
+    num_jets: 210_000_000
+    num_jets_test: 1_000_000
+
+
+  - region:
+      <<: *lowpt
+    sample:
+      <<: *QCD
+    flavours: [ghostgjets]
+    num_jets: 204_750_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghostbjets]
+    num_jets: 65_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghostcjets]
+    num_jets: 16_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghostsjets]
+    num_jets: 13_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghostudjets]
+    num_jets: 40_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghostgjets]
+    num_jets: 39_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *zprime
+    flavours: [ghosttaujets]
+    num_jets: 7_000_000
+    num_jets_test: 500_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *gamma
+    flavours: [ghostbjets, ghostcjets, ghostsjets, ghostudjets, ghostgjets]
+    num_jets: 0
+    num_jets_test: 0
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *gamma
+    flavours: [ghosttaujets]
+    num_jets: 10_000_000
+    num_jets_test: 2_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *QCD
+    flavours: [ghostbjets, ghostcjets, ghosttaujets]
+    num_jets: 0
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *QCD
+    flavours: [ghostsjets]
+    num_jets: 34_125_000 
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *QCD
+    flavours: [ghostudjets]
+    num_jets: 105_000_000
+    num_jets_test: 1_000_000
+
+  - region:
+      <<: *highpt
+    sample:
+      <<: *QCD
+    flavours: [ghostgjets]
+    num_jets: 102_375_000
+    num_jets_test: 1_000_000
+
+resampling:
+  target: ghostcjets
+  method: countup
+  sampling_fraction: 1
+  variables:
+    pt_btagJes:
+      bins: [[10_000, 250_000, 50], [250_000, 1_000_000, 30], [1_000_000, 6_000_000, 20]]
+    absEta_btagJes:
+      bins: [[0, 2.5, 10]]
+
+# note: sensible defaults are defined in the PreprocessingConfig constructor
+global:
+  jets_name: jets
+  batch_size: 2_000_000
+  num_jets_estimate: 25_000_000
+  num_jets_estimate_plotting: 10_000_000
+  base_dir: /global/cfs/cdirs/m2616/wlai/upp_outs/GN3V01-maybe-gamma-sep-QCD
+  # base_dir: /pscratch/sd/w/wlai/upp_outs/GN3V01-maybe-gamma-sep-QCD_temp
+  ntuple_dir: /global/cfs/cdirs/m2616/wlai/ntuples/p6859/
